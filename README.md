@@ -8,6 +8,10 @@ Nine skills for real engineering work with Claude Code.
 npx skills@latest add MatsCornegoor/skills
 ```
 
+```bash
+ln -s ~/.agents/skills/* ~/.claude/skills/
+```
+
 - **[/diagnose](./skills/engineering/diagnose/SKILL.md)** — Disciplined debugging loop: reproduce → minimise → hypothesise → instrument → fix → regression-test.
 - **[/improve-codebase-architecture](./skills/engineering/improve-codebase-architecture/SKILL.md)** — Surface architectural friction and find deepening opportunities in a codebase.
 - **[/tdd](./skills/engineering/tdd/SKILL.md)** — Red-green-refactor loop, one vertical slice at a time.
