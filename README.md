@@ -1,6 +1,6 @@
 # Agent Skills
 
-Ten skills for real engineering work with Claude Code.
+Eleven skills for real engineering work with Claude Code.
 
 ## Install
 
@@ -22,6 +22,7 @@ ln -s ~/.agents/skills/* ~/.claude/skills/
 - **[/security](./skills/security/SKILL.md)** — Scan the codebase for common security vulnerabilities (OWASP-style) and write a structured report.
 - **[/write-a-skill](./skills/write-a-skill/SKILL.md)** — Create new agent skills with proper structure and bundled resources.
 - **[/merge](./skills/merge/SKILL.md)** — Resolve merge conflicts by understanding both sides' intent, asking when unclear which to keep.
+- **[/debug](./skills/debug/SKILL.md)** — Loop fix-and-recheck on a broken build or a browser console full of errors until it's clean.
 
 ## Other tools
 
