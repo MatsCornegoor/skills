@@ -10,7 +10,9 @@ Browse the codebase, identify common performance mistakes, and produce a written
 ## Step 1 — Understand the stack
 
 Use the Explore agent to survey the codebase. Identify:
-- Language and framework
+- Language and framework (e.g. Next.js)
+- CMS in use (e.g. Sanity)
+- Backend/auth platform (e.g. Appwrite)
 - Database / ORM in use
 - Frontend framework (if any)
 - Any existing performance tooling or benchmarks

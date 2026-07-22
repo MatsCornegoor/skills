@@ -12,6 +12,7 @@ Browse the codebase, check which best practices are present or missing, and prod
 Use the Explore agent to identify:
 - Framework (Next.js, Remix, SvelteKit, etc.)
 - CMS in use (Sanity, Contentful, etc.)
+- Backend/auth platform (Appwrite, Supabase, Firebase, etc.)
 - Styling approach
 - Deployment target
 

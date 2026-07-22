@@ -38,6 +38,15 @@
 - **Environment variable hygiene** — secrets are not prefixed with `NEXT_PUBLIC_`. Audit all `NEXT_PUBLIC_` variables and confirm none are sensitive.
 - **Font optimisation** — fonts loaded via `next/font` rather than `@import` or a `<link>` tag in the layout, to avoid render-blocking.
 
+## Appwrite
+
+- **Endpoint/project ID only public config** — only `NEXT_PUBLIC_APPWRITE_ENDPOINT` and `NEXT_PUBLIC_APPWRITE_PROJECT_ID` are exposed to the client; any Appwrite API key is server-only (never `NEXT_PUBLIC_`).
+- **Server client separated from client SDK** — a server-only Appwrite client (`node-appwrite`, API key auth) is used for privileged operations, distinct from the browser `appwrite` SDK used for session-scoped calls.
+- **Collection/document permissions scoped** — collections and documents use specific role permissions (`Permission.read(Role.user(id))`, `Role.team(...)`) rather than blanket `Role.any()` for write access.
+- **Storage bucket permissions scoped** — file buckets restrict read/write per role rather than defaulting to public write.
+- **Attribute indexes defined** — attributes used in `Query.equal`/`Query.orderAsc`/etc. have a matching index defined in the collection schema.
+- **Session handling in SSR** — server components/route handlers validate the Appwrite session (cookie/JWT) before performing user-scoped operations, rather than trusting client-supplied user IDs.
+
 ## Security
 
 - **Security headers** — `next.config.ts` sets HTTP security headers: `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`. Optionally a Content Security Policy.

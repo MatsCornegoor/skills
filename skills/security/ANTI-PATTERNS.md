@@ -42,6 +42,29 @@
 - **Plaintext sensitive storage** — PII, tokens, or payment details stored unencrypted at rest where encryption is warranted. Fix: encrypt sensitive fields, use provider tokenization for payment data.
 - **Verbose error responses** — stack traces, SQL errors, or internal paths returned to the client in production. Fix: generic error messages externally, detailed logs internally.
 
+## Next.js
+
+- **Unvalidated Server Actions** — a `'use server'` action treated as a trusted internal call, missing input validation or a re-check of the caller's session/permissions. Server Actions are public HTTP endpoints regardless of where they're called from. Fix: validate input (e.g. zod) and re-verify authorization inside every Server Action.
+- **Middleware matcher gaps** — `middleware.ts` intended to gate auth on protected routes, but its `matcher` config excludes a route that should be covered (e.g. a new `/admin/*` path added without updating the matcher). Fix: default to protecting everything and explicitly allowlist public routes, not the reverse.
+- **Route Handler missing auth check** — an API route (`app/api/.../route.ts`) that mirrors a UI action but doesn't independently verify the session, reachable directly by anyone who knows the URL.
+- **Over-returning data from Server Actions/Route Handlers** — returning a full DB/model object (including password hashes, internal flags, other users' data) when the client only needs a subset. Fix: map to an explicit response shape.
+- **Secrets leaking via `NEXT_PUBLIC_`** — a private key, DB URL, or signing secret prefixed with `NEXT_PUBLIC_`, bundling it into client-side JS.
+
+## Sanity CMS
+
+- **Unauthenticated revalidation webhook** — `app/api/revalidate/route.ts` (or similar) callable by anyone with no verification of the `sanity-webhook-signature` header, letting an attacker trigger cache invalidation/rebuild storms.
+- **Write-capable token exposed to the client** — a Sanity API token with `write`/`editor` permissions used in client-side code or a `NEXT_PUBLIC_` env var. Only the viewer/read token (if any) belongs client-side; write tokens must stay server-only.
+- **GROQ built by string concatenation** — a GROQ query string built via template interpolation of user input (`` client.fetch(`*[_type == "post" && slug.current == "${input}"]`) ``) instead of parameters, risking query injection. Fix: use the parameters argument, `client.fetch(query, { slug: input })`.
+- **Overly permissive dataset CORS** — the Sanity project's CORS origins configured with a wildcard or overly broad origin, allowing any site to read the dataset with the public API.
+
+## Appwrite
+
+- **Overly permissive collection/document roles** — collections or documents granting `Role.any()` write (or read, for sensitive data) instead of scoping to `Role.user(id)`/`Role.team(id)`, letting any authenticated (or anonymous) user read or modify other users' data.
+- **API key used client-side** — an Appwrite API key (server secret with broad scopes) embedded in frontend code or a `NEXT_PUBLIC_` env var. Only the endpoint URL and project ID are meant to be public; the client SDK should authenticate via user sessions, not API keys.
+- **Trusting client-supplied user/account IDs** — a server route that takes a `userId` from the request body and queries/mutates that user's data without checking it matches the authenticated session. Fix: derive the user ID from the verified session, never from client input.
+- **Overly broad Function execution permissions** — an Appwrite Function configured with `execute: any` when it performs privileged operations, letting any user trigger it directly instead of only authorized roles or server-to-server calls.
+- **Missing session verification before privileged Appwrite calls** — a Next.js server component/route handler using a server client (API key) to act on behalf of a user without first validating that user's session cookie/JWT.
+
 ## Dependencies & Config
 
 - **Known-vulnerable dependencies** — lockfile pinning a package version with a published CVE. Fix: `npm audit`/`pip-audit`/`bundler-audit`, upgrade the dependency.

@@ -14,6 +14,7 @@
 | Images | X | X | X |
 | Sanity CMS | X | X | X |
 | Next.js | X | X | X |
+| Appwrite | X | X | X |
 | Security | X | X | X |
 | Accessibility | X | X | X |
 
@@ -86,6 +87,21 @@
 | Loading states | | |
 | Environment variable hygiene | | |
 | Font optimisation | | |
+
+**Action items:** ...
+
+---
+
+## Appwrite
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Endpoint/project ID only public config | | |
+| Server client separated from client SDK | | |
+| Collection/document permissions scoped | | |
+| Storage bucket permissions scoped | | |
+| Attribute indexes defined | | |
+| Session handling in SSR | | |
 
 **Action items:** ...
 

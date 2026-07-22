@@ -10,7 +10,9 @@ Browse the codebase, identify common security mistakes, and produce a written re
 ## Step 1 — Understand the stack
 
 Use the Explore agent to survey the codebase. Identify:
-- Language and framework
+- Language and framework (e.g. Next.js)
+- CMS in use (e.g. Sanity)
+- Backend/auth platform (e.g. Appwrite)
 - Authentication / authorization mechanism
 - Database / ORM in use
 - How user input enters the system (forms, APIs, file uploads, query params)

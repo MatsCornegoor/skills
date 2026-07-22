@@ -31,6 +31,31 @@
 - **String concatenation in loops** — `s += chunk` in a loop. Fix: `''.join(chunks)`.
 - **Blocking I/O in async context** — `open()`, `requests.get()` etc. called from an `async def` function without `asyncio.to_thread` or an async equivalent.
 
+## Next.js
+
+- **Sequential data fetching in Server Components** — independent `await fetch(...)` / `await getX()` calls made one after another in a Server Component, serializing requests that could run in parallel. Fix: `Promise.all([...])` or start the fetches before their `await`s.
+- **Unintentional dynamic rendering** — `cache: 'no-store'`, `export const dynamic = 'force-dynamic'`, or reading `cookies()`/`headers()` in a route that doesn't need per-request data, forcing full SSR on every request instead of static/ISR. Fix: scope dynamic APIs to the smallest component, use `revalidate` for time-based freshness.
+- **Missing `generateStaticParams`** — dynamic routes (`[slug]`) that are known ahead of time (CMS pages, product lists) rendered on-demand every time instead of pre-rendered at build.
+- **Client component boundary too high** — `'use client'` placed on a large component tree when only a small interactive leaf needs it, shipping unnecessary JS to the browser and losing RSC benefits.
+- **Heavy library imported in a Client Component** — a large dependency (charting, date, markdown libs) imported into a `'use client'` file when it could be used in a Server Component and passed down as data/markup.
+- **Barrel file imports** — `import { Button } from '@/components'` from an index file that re-exports the whole directory, pulling in far more code than needed and inflating the client bundle.
+
+## Sanity CMS
+
+- **Unprojected GROQ queries** — `*[_type == "post"]` fetching entire documents when only a few fields are rendered. Fix: add a projection (`{ title, slug, "image": mainImage.asset->url }`) to fetch only what's used.
+- **Unbounded dereferencing** — chained `->` dereferences without projections (`author->{...}` missing) pulling full referenced documents, compounding payload size. Fix: project referenced fields explicitly.
+- **No pagination on list queries** — `*[_type == "post"]` with no slice, fetching every document when a list view only shows a page at a time. Fix: `[0...12]` range plus a count query.
+- **`useCdn: false` on read-only fetches** — disabling the fast, cached Sanity CDN for content that doesn't need to bypass caching (only needed for previews/drafts or immediately-fresh mutations).
+- **Not using tag-based revalidation** — fetching with `next: { revalidate: N }` (pure time-based ISR) instead of `next: { tags: [...] }` combined with a webhook calling `revalidateTag`, causing either stale content or unnecessarily frequent full rebuilds.
+
+## Appwrite
+
+- **N+1 document fetches** — `databases.getDocument()` called in a loop over a list of IDs instead of `databases.listDocuments()` with `Query.equal('$id', [...ids])`.
+- **Missing attribute indexes** — queries using `Query.equal`/`Query.orderAsc`/`Query.orderDesc` on attributes with no corresponding index, causing full collection scans.
+- **Over-fetching document attributes** — `listDocuments`/`getDocument` without `Query.select([...])` when only a few fields are needed, especially on documents with large attributes.
+- **Unbounded `listDocuments` pagination** — repeatedly calling `listDocuments` with a growing offset instead of cursor-based pagination (`Query.cursorAfter`), which degrades on large collections.
+- **Realtime subscriptions not cleaned up** — `client.subscribe(...)` in a component with no unsubscribe on unmount, accumulating open connections and callbacks over time.
+
 ## General
 
 - **Polling instead of push** — `setInterval` checking for state changes that could be pushed via websocket, SSE, or webhook.
