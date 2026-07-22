@@ -9,7 +9,7 @@ npx skills@latest add MatsCornegoor/skills
 ```
 
 ```bash
-ln -s ~/.agents/skills/* ~/.claude/skills/
+ln -s ~/.agents/skills ~/.claude/skills
 ```
 
 - **[/improve-codebase-architecture](./skills/improve-codebase-architecture/SKILL.md)** — Surface architectural friction and find deepening opportunities in a codebase.
