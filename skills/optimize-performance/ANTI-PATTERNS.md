@@ -56,6 +56,42 @@
 - **Unbounded `listDocuments` pagination** — repeatedly calling `listDocuments` with a growing offset instead of cursor-based pagination (`Query.cursorAfter`), which degrades on large collections.
 - **Realtime subscriptions not cleaned up** — `client.subscribe(...)` in a component with no unsubscribe on unmount, accumulating open connections and callbacks over time.
 
+## Animation
+
+- **Animating layout properties** — animating `top`/`left`/`width`/`height`/`margin`/`padding` (CSS transitions, keyframes, or JS) triggers layout every frame. Fix: animate `transform` and `opacity` only.
+- **Animating expensive paint properties** — animating `box-shadow`, `filter: blur()`, `backdrop-filter`, `clip-path` or large gradients over big areas repaints every frame. Fix: animate the `opacity` of a pre-rendered layer (e.g. a pseudo-element holding the shadow), or shrink the area.
+- **Layout thrashing** — reading layout (`offsetHeight`, `getBoundingClientRect()`, `getComputedStyle`, `scrollTop`) after writing styles, inside a loop or animation frame. Each read forces a synchronous layout. Fix: read everything first, then write; cache measurements.
+- **Timers instead of rAF** — JS animations driven by `setInterval`/`setTimeout`, which drift from the display refresh and keep running in hidden tabs. Fix: `requestAnimationFrame`, or CSS / Web Animations API.
+- **React state per frame** — `setState` (or a store update) inside `requestAnimationFrame`, a scroll handler or a pointermove handler, re-rendering a component tree every frame. Fix: write to a ref or `element.style` directly, or use motion values (Framer Motion `useMotionValue`, GSAP `quickSetter`).
+- **Animations running while invisible** — infinite CSS animations, rAF loops, Lottie players or videos that keep running offscreen or under a closed menu. Fix: pause with `IntersectionObserver` and `animation-play-state` / `.pause()`.
+- **`will-change` everywhere** — `will-change` (or `transform: translateZ(0)`) on many or permanent elements creates a GPU layer each, eating memory and slowing compositing. Fix: apply it only to elements that are about to animate, and remove it afterwards.
+- **Heavy Lottie / SVG animation** — Lottie files with thousands of shapes, animated SVG filters, or animated path `d` morphing on large SVGs. Fix: simplify the file, use the Lottie `canvas` renderer, or swap for a video.
+- **Animation instances not cleaned up** — GSAP timelines/ScrollTriggers, Framer Motion listeners or Lottie instances created in a component without `kill()`/`destroy()` on unmount, piling up on client-side navigation. Fix: `gsap.context()` + `revert()`, or cleanup in the effect's return.
+
+## Scroll & input
+
+- **Non-passive scroll listeners** — `wheel`/`touchstart`/`touchmove` listeners without `{ passive: true }` block scrolling until the handler finishes.
+- **Work inside scroll handlers** — layout reads, DOM writes or state updates directly in a `scroll` handler, running more often than frames render. Fix: `IntersectionObserver` for visibility checks, CSS scroll-driven animations (`animation-timeline: scroll()`), or batch into one rAF per frame.
+- **Multiple scroll/animation loops** — a smooth-scroll library (Lenis, Locomotive), GSAP's ticker and separate rAF loops all running independently. Fix: drive everything from one loop (e.g. `gsap.ticker.add(lenis.raf)`).
+- **`background-attachment: fixed`** — forces a repaint of the whole background on every scroll frame. Fix: a `position: fixed` element with the background instead.
+- **Long lists rendered in full** — hundreds of complex rows or cards in the DOM at once. Fix: virtualization, or `content-visibility: auto` with `contain-intrinsic-size`.
+
+## Canvas & WebGL
+
+- **Redrawing when nothing changed** — a render loop that draws every frame even when the scene is static. Fix: render on demand (React Three Fiber `frameloop="demand"` + `invalidate()`), or stop the loop when idle.
+- **Render loop running offscreen** — the canvas keeps rendering after it has scrolled out of view. Fix: pause with `IntersectionObserver`.
+- **Uncapped devicePixelRatio** — canvas backing size set to CSS size × `devicePixelRatio`, which is 3 on many phones (9× the pixels of 1×). Fix: cap it at 2, or lower for fullscreen effects (R3F `dpr={[1, 2]}`).
+- **Allocating in the render loop** — `new Vector3()`, arrays, objects or closures created every frame cause GC pauses that show up as periodic stutters. Fix: allocate once outside the loop and reuse.
+- **GPU read-backs** — `getImageData`, `readPixels` or `toDataURL` every frame stall the pipeline while the CPU waits for the GPU. Fix: do it rarely, or keep the work on the GPU.
+- **Per-item 2D state changes** — setting `ctx.font`, `fillStyle` or `shadowBlur` for each item drawn. `shadowBlur` is especially slow. Fix: group draws by style, pre-render static sprites to an offscreen canvas.
+- **Too many draw calls** — many separate meshes/materials for repeated objects. Fix: `InstancedMesh`, merged geometries, shared materials, texture atlases. Check `renderer.info.render.calls`.
+- **Oversized or uncompressed textures** — 4K textures for things shown at 300px, or PNG/JPG textures decoded on the main thread. Fix: size textures to their display size, use KTX2/Basis compressed textures.
+- **Full-resolution post-processing** — bloom, blur or DOF passes at full resolution together with `antialias: true` and high DPR. Fix: run effects at half resolution, use FXAA/SMAA instead of MSAA.
+- **Expensive fullscreen shaders** — complex fragment shaders (many loop iterations, noise layers, texture lookups) running for every pixel of a fullscreen quad. Fix: render to a smaller target and upscale, or simplify.
+- **Resources not disposed** — geometries, materials, textures and render targets not `.dispose()`d on unmount, leaking GPU memory across route changes.
+- **Heavy simulation on the main thread** — physics, particles or pathfinding computed on the main thread alongside rendering. Fix: move it to a Web Worker, or render with `OffscreenCanvas` in a worker.
+- **`preserveDrawingBuffer: true`** without needing screenshots, which stops the browser from swapping buffers efficiently.
+
 ## General
 
 - **Polling instead of push** — `setInterval` checking for state changes that could be pushed via websocket, SSE, or webhook.
