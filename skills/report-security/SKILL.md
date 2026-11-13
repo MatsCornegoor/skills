@@ -1,5 +1,5 @@
 ---
-name: security-report
+name: report-security
 description: Browse a codebase for common security mistakes and write a report of findings. Use when the user wants a security audit, wants to find vulnerabilities, check for OWASP-style issues, or get a security review of the codebase.
 ---
 

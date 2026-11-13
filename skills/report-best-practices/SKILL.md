@@ -1,5 +1,5 @@
 ---
-name: best-practices
+name: report-best-practices
 description: Browse a codebase for missing or incomplete best practices and write a report of findings. Use when the user wants a best practices audit, wants to check what's missing, or asks about improvements like SEO, accessibility, security headers, or CMS integration quality.
 ---
 
